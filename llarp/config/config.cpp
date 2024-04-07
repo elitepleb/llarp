@@ -1159,52 +1159,6 @@ namespace llarp
   }
 
   void
-  LokidConfig::defineConfigOptions(ConfigDefinition& conf, const ConfigGenParameters& params)
-  {
-    (void)params;
-
-    conf.defineOption<bool>(
-        "lokid",
-        "enabled",
-        RelayOnly,
-        Default{true},
-        Comment{
-            "Whether or not we should talk to oxend. Must be enabled for staked routers.",
-        },
-        AssignmentAcceptor(whitelistRouters));
-
-    conf.defineOption<std::string>("lokid", "jsonrpc", RelayOnly, [](std::string arg) {
-      if (arg.empty())
-        return;
-      throw std::invalid_argument(
-          "the [lokid]:jsonrpc option is no longer supported; please use the [lokid]:rpc config "
-          "option instead with oxend's lmq-local-control address -- typically a value such as "
-          "rpc=ipc:///var/lib/oxen/oxend.sock or rpc=ipc:///home/snode/.oxen/oxend.sock");
-    });
-
-    conf.defineOption<std::string>(
-        "lokid",
-        "rpc",
-        RelayOnly,
-        Required,
-        Comment{
-            "oxenmq control address for for communicating with oxend. Depends on oxend's",
-            "lmq-local-control configuration option. By default this value should be",
-            "ipc://OXEND-DATA-DIRECTORY/oxend.sock, such as:",
-            "    rpc=ipc:///var/lib/oxen/oxend.sock",
-            "    rpc=ipc:///home/USER/.oxen/oxend.sock",
-            "but can use (non-default) TCP if oxend is configured that way:",
-            "    rpc=tcp://127.0.0.1:5678",
-        },
-        [this](std::string arg) { lokidRPCAddr = oxenmq::address(arg); });
-
-    // Deprecated options:
-    conf.defineOption<std::string>("lokid", "username", Deprecated);
-    conf.defineOption<std::string>("lokid", "password", Deprecated);
-    conf.defineOption<std::string>("lokid", "service-node-seed", Deprecated);
-  }
-
-  void
   BootstrapConfig::defineConfigOptions(ConfigDefinition& conf, const ConfigGenParameters& params)
   {
     (void)params;
@@ -1493,7 +1447,6 @@ namespace llarp
     dns.defineConfigOptions(conf, params);
     links.defineConfigOptions(conf, params);
     api.defineConfigOptions(conf, params);
-    lokid.defineConfigOptions(conf, params);
     bootstrap.defineConfigOptions(conf, params);
     logging.defineConfigOptions(conf, params);
   }
@@ -1638,13 +1591,6 @@ namespace llarp
     llarp::ConfigDefinition def{true};
     initializeConfig(def, *params);
     generateCommonConfigComments(def);
-
-    // oxend
-    def.addSectionComments(
-        "lokid",
-        {
-            "Settings for communicating with oxend",
-        });
 
     return def.generateINIConfig(true);
   }

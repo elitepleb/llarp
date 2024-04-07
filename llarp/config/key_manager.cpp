@@ -88,16 +88,13 @@ namespace llarp
       }
     }
 
-    if (not config.lokid.whitelistRouters)
-    {
-      // load identity key or create if needed
-      auto identityKeygen = [](llarp::SecretKey& key) {
-        // TODO: handle generating from service node seed
-        llarp::CryptoManager::instance()->identity_keygen(key);
-      };
-      if (not loadOrCreateKey(m_idKeyPath, identityKey, identityKeygen))
-        return false;
-    }
+    // load identity key or create if needed
+    auto identityKeygen = [](llarp::SecretKey& key) {
+      // TODO: handle generating from service node seed
+      llarp::CryptoManager::instance()->identity_keygen(key);
+    };
+    if (not loadOrCreateKey(m_idKeyPath, identityKey, identityKeygen))
+      return false;
 
     // load encryption key
     auto encryptionKeygen = [](llarp::SecretKey& key) {

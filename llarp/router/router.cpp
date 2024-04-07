@@ -422,12 +422,7 @@ namespace llarp
 
     log::debug(logcat, "Configuring router");
 
-    whitelistRouters = conf.lokid.whitelistRouters;
-    if (whitelistRouters)
-    {
-      lokidRPCAddr = oxenmq::address(conf.lokid.lokidRPCAddr);
-      m_lokidRpcClient = std::make_shared<rpc::LokidRpcClient>(m_lmq, weak_from_this());
-    }
+    whitelistRouters = false;
 
     log::debug(logcat, "Starting RPC server");
     if (not StartRpcServer())

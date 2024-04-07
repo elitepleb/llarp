@@ -195,16 +195,6 @@ namespace llarp
     defineConfigOptions(ConfigDefinition& conf, const ConfigGenParameters& params);
   };
 
-  struct LokidConfig
-  {
-    bool whitelistRouters = false;
-    fs::path ident_keyfile;
-    oxenmq::address lokidRPCAddr;
-
-    void
-    defineConfigOptions(ConfigDefinition& conf, const ConfigGenParameters& params);
-  };
-
   struct BootstrapConfig
   {
     std::vector<fs::path> files;
@@ -241,7 +231,6 @@ namespace llarp
     DnsConfig dns;
     LinksConfig links;
     ApiConfig api;
-    LokidConfig lokid;
     BootstrapConfig bootstrap;
     LoggingConfig logging;
 
