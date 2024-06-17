@@ -333,6 +333,8 @@ namespace llarp
     {
       if (const auto maybe = GetHopsForBuild())
         Build(*maybe, roles);
+      else
+        log::warning(log_path, "{} did not build path, no hops available.", Name());
     }
 
     bool

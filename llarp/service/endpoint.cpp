@@ -883,9 +883,14 @@ namespace llarp
             return exclude.count(rc.pubkey) == 0
                 and not r->routerProfiling().IsBadForPath(rc.pubkey);
           });
-      if (not maybe.has_value())
-        return std::nullopt;
-      return GetHopsForBuildWithEndpoint(maybe->pubkey);
+
+      if (maybe)
+      {
+        if (auto hops = GetHopsForBuildWithEndpoint(maybe->pubkey))
+          return hops;
+      }
+      // fallback for small number of nodes.
+      return path::Builder::GetHopsForBuild();
     }
 
     std::optional<std::vector<RouterContact>>
