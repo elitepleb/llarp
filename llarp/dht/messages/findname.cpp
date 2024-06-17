@@ -44,7 +44,14 @@ namespace llarp::dht
     auto r = dht->impl->GetRouter();
     if (pathID.IsZero() or not r->IsServiceNode())
       return false;
-    r->RpcClient()->LookupLNSNameHash(NameHash, [r, pathID = pathID, TxID = TxID](auto maybe) {
+    auto rpc = r->RpcClient();
+    if (rpc == nullptr)
+    {
+      // opennet case.
+      replies.emplace_back(new GotNameMessage(dht::Key_t{}, TxID, service::EncryptedName{}));
+      return true;
+    }
+    rpc->LookupLNSNameHash(NameHash, [r, pathID = pathID, TxID = TxID](auto maybe) {
       auto path = r->pathContext().GetPathForTransfer(pathID);
       if (path == nullptr)
         return;
