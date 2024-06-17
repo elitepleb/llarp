@@ -92,10 +92,7 @@ endif()
 
 option(WARN_DEPRECATED "show deprecation warnings" ${debug})
 
-if(BUILD_STATIC_DEPS AND STATIC_LINK)
-  message(STATUS "we are building static deps so we won't build shared libs")
-  set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
-endif()
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
 
 include(CheckCXXSourceCompiles)
 include(CheckLibraryExists)
