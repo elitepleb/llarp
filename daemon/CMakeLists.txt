@@ -1,25 +1,14 @@
-set(exetargets lokinet)
+set(exetargets llarpd)
 
 if(APPLE)
-  add_executable(lokinet lokinet.swift)
-  target_compile_options(lokinet BEFORE PRIVATE -target x86_64-apple-macos${CMAKE_OSX_DEPLOYMENT_TARGET})
+  add_executable(llarpd lokinet.swift)
+  target_compile_options(llarpd BEFORE PRIVATE -target x86_64-apple-macos${CMAKE_OSX_DEPLOYMENT_TARGET})
 else()
-  add_executable(lokinet lokinet.cpp)
+  add_executable(llarpd lokinet.cpp)
 endif()
-add_executable(lokinet-vpn lokinet-vpn.cpp)
-enable_lto(lokinet lokinet-vpn)
-list(APPEND exetargets lokinet-vpn)
-
-if(WITH_BOOTSTRAP)
-  add_executable(lokinet-bootstrap lokinet-bootstrap.cpp)
-  list(APPEND exetargets lokinet-bootstrap)
-  enable_lto(lokinet-bootstrap)
-endif()
-
-
-if(TRACY_ROOT)
-  target_sources(lokinet PRIVATE ${TRACY_ROOT}/TracyClient.cpp)
-endif()
+add_executable(llarp-vpn lokinet-vpn.cpp)
+enable_lto(llarpd llarp-vpn)
+list(APPEND exetargets llarp-vpn)
 
 set(should_install ON)
 set(SETCAP)
@@ -34,15 +23,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
       message(WARNING "cannot find setcap binary you will not be able use the install targets unless you use -DWITH_SETCAP=OFF")
       set(should_install OFF)
     endif()
-  endif()
-endif()
-
-if(WITH_BOOTSTRAP)
-  target_link_libraries(lokinet-bootstrap PUBLIC cpr::cpr)
-  if(NOT WIN32)
-    find_package(OpenSSL REQUIRED)
-    # because debian sid's curl doesn't link against openssl for some godawful cursed reason
-    target_link_libraries(lokinet-bootstrap PUBLIC OpenSSL::SSL OpenSSL::Crypto)
   endif()
 endif()
 
@@ -72,19 +52,19 @@ foreach(exe ${exetargets})
       install(TARGETS ${exe}
         BUNDLE DESTINATION "${PROJECT_BINARY_DIR}"
         RUNTIME DESTINATION "."
-        COMPONENT lokinet)
+        COMPONENT llarpd)
     else()
-      install(TARGETS ${exe} RUNTIME DESTINATION bin COMPONENT lokinet)
+      install(TARGETS ${exe} RUNTIME DESTINATION bin COMPONENT llarpd)
     endif()
   endif()
 endforeach()
 
 if(SETCAP)
-  install(CODE "execute_process(COMMAND ${SETCAP} cap_net_admin,cap_net_bind_service=+eip ${CMAKE_INSTALL_PREFIX}/bin/lokinet)")
+  install(CODE "execute_process(COMMAND ${SETCAP} cap_net_admin,cap_net_bind_service=+eip ${CMAKE_INSTALL_PREFIX}/bin/llarpd)")
 endif()
 
 if(STRIP_SYMBOLS)
   add_custom_target(symbols ALL
-    COMMAND ${CMAKE_COMMAND} -E tar cJf ${CMAKE_CURRENT_BINARY_DIR}/debug-symbols.tar.xz $<TARGET_FILE:lokinet>.debug
-    DEPENDS lokinet)
+    COMMAND ${CMAKE_COMMAND} -E tar cJf ${CMAKE_CURRENT_BINARY_DIR}/debug-symbols.tar.xz $<TARGET_FILE:llarpd>.debug
+    DEPENDS llarpd)
 endif()
