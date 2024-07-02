@@ -880,6 +880,9 @@ namespace llarp
       ForEachPath([&exclude](auto path) { exclude.insert(path->Endpoint()); });
       const auto maybe =
           m_router->nodedb()->GetRandom([exclude, r = m_router](const auto& rc) -> bool {
+            // dont pick edge router
+            if (r->linkManager().HasSessionTo(rc.pubkey))
+              return false;
             return exclude.count(rc.pubkey) == 0
                 and not r->routerProfiling().IsBadForPath(rc.pubkey);
           });
