@@ -266,7 +266,10 @@ namespace llarp
     Builder::GetHopsForBuild()
     {
       auto filter = [r = m_router](const auto& rc) -> bool {
-        return not r->routerProfiling().IsBadForPath(rc.pubkey, 1);
+        // don't build paths to our edge nodes as a client.
+        if (not r->IsServiceNode() and r->linkManager().HasSessionTo(rc.pubkey))
+          return false;
+        return not r->routerProfiling().IsBadForPath(rc.pubkey);
       };
       if (const auto maybe = m_router->nodedb()->GetRandom(filter))
       {
