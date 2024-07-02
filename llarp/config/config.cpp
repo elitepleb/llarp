@@ -28,7 +28,7 @@ namespace llarp
   constexpr int DefaultMinConnectionsForRouter = 6;
   constexpr int DefaultMaxConnectionsForRouter = 60;
 
-  constexpr int DefaultMinConnectionsForClient = 4;
+  constexpr int DefaultMinConnectionsForClient = 2;
   constexpr int DefaultMaxConnectionsForClient = 6;
 
   constexpr int DefaultPublicPort = 1090;
