@@ -55,9 +55,9 @@ namespace llarp
     auto path = r->pathContext().GetByDownstream(session->GetPubKey(), pathid);
     if (path)
     {
-      return path->HandleUpstream(llarp_buffer_t(X), Y, r);
+      path->HandleUpstream(llarp_buffer_t(X), Y, r);
     }
-    return false;
+    return true;
   }
 
   void
@@ -109,9 +109,8 @@ namespace llarp
     auto path = r->pathContext().GetByUpstream(session->GetPubKey(), pathid);
     if (path)
     {
-      return path->HandleDownstream(llarp_buffer_t(X), Y, r);
+      path->HandleDownstream(llarp_buffer_t(X), Y, r);
     }
-    llarp::LogWarn("no path for downstream message id=", pathid);
-    return false;
+    return true;
   }
 }  // namespace llarp

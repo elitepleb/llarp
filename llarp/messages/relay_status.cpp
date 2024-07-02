@@ -135,7 +135,7 @@ namespace llarp
     if (not path)
     {
       llarp::LogWarn("unhandled LR_Status message: no associated path found pathid=", pathid);
-      return false;
+      return true;
     }
     auto handler = std::make_shared<LRSM_AsyncHandler>(frames, status, path, router, pathid);
     handler->queue_handle();
