@@ -23,7 +23,7 @@ Build requirements:
 * Git
 * CMake
 * C++ 17 capable C++ compiler
-* libevent >= 2.1
+* libuv
 * libsodium >= 1.0.18
 * libsystemd
 
@@ -33,14 +33,14 @@ The current most supported platform is Linux. Currently you can compile from sou
 
 For Debian, install the following packages:
 
-    $ sudo apt install build-essential cmake git pkg-config libevent-dev libsodium-dev libsystemd-dev
+    $ sudo apt install build-essential cmake git pkg-config automake libtool libuv1-dev libsodium-dev libsystemd-dev
 
 Clone the git repo:
     
     $ git clone --recursive https://github.com/majestrate/llarp 
     $ mkdir llarp/build
     $ cd llarp/build
-    $ cmake .. -DCMAKE_BUILD_TYPE=Release 
+    $ cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
     $ make -j$(nproc)
 
 To install the binary and service files:
@@ -73,6 +73,8 @@ The Android APK build is in need of a maintainer.
 
 We do not provide any distro specific packaging at this time. If you encountered an issue from that, file an issue with the package maintainer.
 
+
+<!--
 # Join the network
 
 Bootstrap into the network, this will prompt the user and guide through this setup.
@@ -82,3 +84,4 @@ Bootstrap into the network, this will prompt the user and guide through this set
 For automated bootstrap see:
 
     $ llarp-opennet-setup --help
+-->
