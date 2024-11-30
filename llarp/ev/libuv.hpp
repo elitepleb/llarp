@@ -75,6 +75,11 @@ namespace llarp::uv
     bool
     inEventLoop() const override;
 
+    void
+    queue_work(std::unique_ptr<EventLoopWork> work) override;
+    void
+    queue_slow_work(std::unique_ptr<EventLoopWork> work) override;
+
    protected:
     std::shared_ptr<uvw::Loop> m_Impl;
     std::optional<std::thread::id> m_EventLoopThreadID;

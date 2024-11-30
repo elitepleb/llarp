@@ -1,4 +1,5 @@
 #include "libuv.hpp"
+#include <uv.h>
 #include <memory>
 #include <thread>
 #include <type_traits>
@@ -379,6 +380,66 @@ namespace llarp::uv
       return *m_EventLoopThreadID == std::this_thread::get_id();
     // assume we are in it because we haven't started up yet
     return true;
+  }
+
+  namespace
+  {
+    struct Work
+    {
+      uv_work_t uv_work;
+      std::unique_ptr<EventLoopWork> _work;
+
+      static void
+      work_callback(uv_work_t* req)
+      {
+        static_cast<Work*>(req->data)->work();
+      }
+
+      static void
+      after_work_callback(uv_work_t* req, int st)
+      {
+        auto* work = static_cast<Work*>(req->data);
+        work->cleanup(st == UV_ECANCELED);
+        delete work;
+      }
+
+      Work(std::unique_ptr<EventLoopWork> work) : _work{std::move(work)}
+      {
+        uv_work.data = this;
+      }
+
+      constexpr uv_work_t*
+      uv()
+      {
+        return &uv_work;
+      }
+
+      void
+      work() const
+      {
+        _work->work();
+      }
+      void
+      cleanup(bool cancel) const
+      {
+        _work->cleanup(cancel);
+      }
+    };
+
+  }  // namespace
+
+  void
+  Loop::queue_work(std::unique_ptr<EventLoopWork> ev_work)
+  {
+    Work* work = new Work{std::move(ev_work)};
+    uv_queue_work(m_Impl->raw(), work->uv(), Work::work_callback, Work::after_work_callback);
+  }
+
+  void
+  Loop::queue_slow_work(std::unique_ptr<EventLoopWork> work)
+  {
+    // TODO: move out of thread pool
+    queue_work(std::move(work));
   }
 
 }  // namespace llarp::uv

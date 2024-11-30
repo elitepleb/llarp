@@ -90,8 +90,6 @@ namespace llarp
     class Platform;
   }
 
-  using LMQ_ptr = std::shared_ptr<oxenmq::OxenMQ>;
-
   struct AbstractRouter : public std::enable_shared_from_this<AbstractRouter>
   {
 #ifdef LOKINET_HIVE
@@ -105,9 +103,6 @@ namespace llarp
 
     virtual const net::Platform&
     Net() const = 0;
-
-    virtual const LMQ_ptr&
-    lmq() const = 0;
 
     virtual vpn::Platform*
     GetVPNPlatform() const = 0;
