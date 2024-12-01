@@ -293,24 +293,6 @@ namespace llarp
       {
         m_AuthPolicy = service::MakeFileAuthPolicy(m_router, conf.m_AuthFiles, conf.m_AuthFileType);
       }
-      else if (conf.m_AuthType != service::AuthType::eAuthTypeNone)
-      {
-        std::string url, method;
-        if (conf.m_AuthUrl.has_value() and conf.m_AuthMethod.has_value())
-        {
-          url = *conf.m_AuthUrl;
-          method = *conf.m_AuthMethod;
-        }
-        auto auth = std::make_shared<rpc::EndpointAuthRPC>(
-            url,
-            method,
-            conf.m_AuthWhitelist,
-            conf.m_AuthStaticTokens,
-            Router()->lmq(),
-            shared_from_this());
-        auth->Start();
-        m_AuthPolicy = std::move(auth);
-      }
 
       m_DnsConfig = dnsConf;
       m_TrafficPolicy = conf.m_TrafficPolicy;

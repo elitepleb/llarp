@@ -503,13 +503,6 @@ namespace llarp
                   LogInfo("refreshed rc for ", router);
                   r->nodedb()->PutIfNewer(*rc);
                 }
-                else
-                {
-                  // remove all connections to this router as it's probably not registered anymore
-                  LogWarn("removing router ", router, " because of path build timeout");
-                  r->linkManager().DeregisterPeer(router);
-                  r->nodedb()->Remove(router);
-                }
               },
               true);
         });

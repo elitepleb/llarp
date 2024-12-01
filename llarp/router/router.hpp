@@ -73,11 +73,12 @@ namespace llarp
     /// should we obey the service node whitelist?
     bool whitelistRouters = false;
 
-    LMQ_ptr m_lmq;
-
     path::BuildLimiter m_PathBuildLimiter;
 
     std::shared_ptr<EventLoopWakeup> m_Pump;
+
+    std::unique_ptr<EventLoopWork> m_CurrentEvLoopWork;
+    std::shared_ptr<EventLoopWakeup> m_LoopWorkPumper;
 
     path::BuildLimiter&
     pathBuildLimiter() override
@@ -87,12 +88,6 @@ namespace llarp
 
     const llarp::net::Platform&
     Net() const override;
-
-    const LMQ_ptr&
-    lmq() const override
-    {
-      return m_lmq;
-    }
 
     const std::shared_ptr<rpc::LokidRpcClient>&
     RpcClient() const override
@@ -232,7 +227,6 @@ namespace llarp
     llarp_dht_context* _dht = nullptr;
     std::shared_ptr<NodeDB> _nodedb;
     llarp_time_t _startedAt;
-    const oxenmq::TaggedThreadID m_DiskThread;
 
     llarp_time_t
     Uptime() const override;

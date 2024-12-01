@@ -64,6 +64,30 @@ namespace llarp
     start(llarp_time_t every, std::function<void()> task) = 0;
   };
 
+  /// thread pool work item
+  class EventLoopWork
+  {
+    std::vector<std::function<void()>> _pure_work;
+    std::function<void(bool)> _cleanup;
+
+   public:
+    EventLoopWork(std::function<void(bool)> cleanup = nullptr);
+
+    template <typename Work_t>
+    void
+    add_work(Work_t work)
+    {
+      _pure_work.emplace_back(std::move(work));
+    }
+
+    /// do work item while in thread
+    void
+    work() const;
+    /// do cleanup while in main loop
+    void
+    cleanup(bool cancel) const;
+  };
+
   // this (nearly!) abstract base class
   // is overriden for each platform
   class EventLoop
@@ -228,6 +252,12 @@ namespace llarp
     // Idempotent and thread-safe.
     virtual void
     wakeup() = 0;
+
+    virtual void
+    queue_work(std::unique_ptr<EventLoopWork> work) = 0;
+
+    virtual void
+    queue_slow_work(std::unique_ptr<EventLoopWork> work) = 0;
   };
 
   using EventLoop_ptr = std::shared_ptr<EventLoop>;

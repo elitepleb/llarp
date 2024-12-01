@@ -23,4 +23,21 @@ namespace llarp
     return net::Platform::Default_ptr();
   }
 
+  EventLoopWork::EventLoopWork(std::function<void(bool)> cleanup) : _cleanup{std::move(cleanup)}
+  {}
+
+  void
+  EventLoopWork::work() const
+  {
+    for (const auto& work : _pure_work)
+      work();
+  }
+
+  void
+  EventLoopWork::cleanup(bool cancel) const
+  {
+    if (_cleanup)
+      _cleanup(cancel);
+  }
+
 }  // namespace llarp

@@ -49,15 +49,15 @@ namespace llarp
 
   Router::Router(EventLoop_ptr loop, std::shared_ptr<vpn::Platform> vpnPlatform)
       : ready{false}
-      , m_lmq{std::make_shared<oxenmq::OxenMQ>()}
+      , m_CurrentEvLoopWork{std::make_unique<EventLoopWork>()}
       , _loop{std::move(loop)}
       , _vpnPlatform{std::move(vpnPlatform)}
       , paths{this}
       , _exitContext{this}
       , _dht{llarp_dht_context_new(this)}
-      , m_DiskThread{m_lmq->add_tagged_thread("disk")}
       , inbound_link_msg_parser{this}
       , _hiddenServiceContext{this}
+
       , m_RoutePoker{std::make_shared<RoutePoker>()}
       , m_RPCServer{nullptr}
       , _randomStartDelay{
@@ -65,13 +65,15 @@ namespace llarp
                                     : 0s}
   {
     m_keyManager = std::make_shared<KeyManager>();
-    // for lokid, so we don't close the connection when syncing the whitelist
-    m_lmq->MAX_MSG_SIZE = -1;
     _stopping.store(false);
     _running.store(false);
     _lastTick = llarp::time_now_ms();
     m_NextExploreAt = Clock_t::now();
     m_Pump = _loop->make_waker([this]() { PumpLL(); });
+    m_LoopWorkPumper = _loop->make_waker([this]() {
+      _loop->queue_work(std::move(m_CurrentEvLoopWork));
+      m_CurrentEvLoopWork = std::make_unique<EventLoopWork>();
+    });
   }
 
   Router::~Router()
@@ -427,12 +429,6 @@ namespace llarp
     log::debug(logcat, "Starting RPC server");
     if (not StartRpcServer())
       throw std::runtime_error("Failed to start rpc server");
-
-    if (conf.router.m_workerThreads > 0)
-      m_lmq->set_general_threads(conf.router.m_workerThreads);
-
-    log::debug(logcat, "Starting OMQ server");
-    m_lmq->start();
 
     _nodedb = std::move(nodedb);
 
@@ -1216,9 +1212,6 @@ namespace llarp
   bool
   Router::StartRpcServer()
   {
-    if (m_Config->api.m_enableRPCServer)
-      m_RPCServer = std::make_unique<rpc::RPCServer>(m_lmq, *this);
-
     return true;
   }
 
@@ -1453,8 +1446,6 @@ namespace llarp
   {
     llarp::sys::service_manager->stopping();
     Close();
-    log::debug(logcat, "stopping oxenmq");
-    m_lmq.reset();
   }
 
   void
@@ -1592,13 +1583,31 @@ namespace llarp
   void
   Router::QueueWork(std::function<void(void)> func)
   {
-    m_lmq->job(std::move(func));
+    auto add_work = [](Router& self, auto work) {
+      self.m_CurrentEvLoopWork->add_work(std::move(work));
+      self.m_LoopWorkPumper->Trigger();
+    };
+
+    if (_loop->inEventLoop())
+    {
+      add_work(*this, std::move(func));
+      return;
+    }
+    _loop->call_soon([weak = weak_from_this(), func = std::move(func), add_work]() {
+      auto ptr = weak.lock();
+      if (not ptr)
+        return;
+      auto& self = *dynamic_cast<Router*>(ptr.get());
+      add_work(self, std::move(func));
+    });
   }
 
   void
   Router::QueueDiskIO(std::function<void(void)> func)
   {
-    m_lmq->job(std::move(func), m_DiskThread);
+    auto work = std::make_unique<EventLoopWork>();
+    work->add_work(std::move(func));
+    _loop->queue_slow_work(std::move(work));
   }
 
   bool
