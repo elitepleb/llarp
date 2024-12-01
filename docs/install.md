@@ -6,14 +6,14 @@ Tier 1:
 * [FreeBSD](#freebsd-install)
 
 Tier 2:
-  
+
 * [Android](#apk-install) (maintainer needed)
 
 We will not port to these platforms:
 
 * [Windows](#win32-install)
 * [MacOS](#macos-install)
-* iPhone 
+* iPhone
 * Homebrew
 
 # Building
@@ -26,6 +26,7 @@ Build requirements:
 * libuv
 * libsodium >= 1.0.18
 * libsystemd
+* libunbound
 
 ## Linux <span id="linux-install" />
 
@@ -33,18 +34,18 @@ The current most supported platform is Linux. Currently you can compile from sou
 
 For Debian, install the following packages:
 
-    $ sudo apt install build-essential cmake git pkg-config automake libtool libuv1-dev libsodium-dev libsystemd-dev
+    $ sudo apt install build-essential cmake git pkg-config automake libtool libuv1-dev libsodium-dev libsystemd-dev nettle-dev libevent-dev libunbound-dev
 
 Clone the git repo:
-    
-    $ git clone --recursive https://github.com/majestrate/llarp 
+
+    $ git clone --recursive https://github.com/majestrate/llarp
     $ mkdir llarp/build
     $ cd llarp/build
-    $ cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
+    $ cmake .. -DBUILD_SHARED_LIBS=OFF
     $ make -j$(nproc)
 
 To install the binary and service files:
-    
+
     $ sudo make install
 
 ## FreeBSD <span id="freebsd-install" />
@@ -56,14 +57,14 @@ build:
     $ git clone --recursive https://github.com/majestrate/llarp
     $ mkdir llarp/build
     $ cd llarp/build
-    $ cmake .. -DCMAKE_BUILD_TYPE=Release 
+    $ cmake .. -DCMAKE_BUILD_TYPE=Release
     $ make -j$(nproc)
 
 install (root):
 
-    # make install    
+    # make install
 
-## Windows / MacOS / Android <span id="windows-install" />  <span id="macos-install" /> 
+## Windows / MacOS / Android <span id="windows-install" />  <span id="macos-install" />
 
 We do not provide official builds for windows or macos as support for these platforms have been discontinued.
 
